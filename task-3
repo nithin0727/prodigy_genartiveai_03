@@ -1,0 +1,60 @@
+import random
+import re
+from collections import defaultdict
+
+def preprocess_text(text):
+    # Convert text to lowercase and split into words
+    text = text.lower()
+    words = re.findall(r'\w+', text)
+    return words
+def build_markov_chain(words, order=1):
+    markov_chain = defaultdict(list)
+
+    for i in range(len(words) - order):
+        # Create a tuple of the current state (word sequence of length 'order')
+        current_state = tuple(words[i:i + order])
+        # Append the next word to the list of possible next words
+        next_word = words[i + order]
+        markov_chain[current_state].append(next_word)
+
+    return markov_chain
+def generate_text(markov_chain, length=50, seed=None, order=1):
+    if seed:
+        random.seed(seed)
+
+    # Start with a random state
+    current_state = random.choice(list(markov_chain.keys()))
+    generated_words = list(current_state)
+
+    for _ in range(length - order):
+        # Get the list of next possible words
+        next_words = markov_chain[current_state]
+
+        if not next_words:
+            break
+
+        # Randomly choose the next word
+        next_word = random.choice(next_words)
+        generated_words.append(next_word)
+
+        # Move to the next state
+        current_state = tuple(generated_words[-order:])
+
+    return ' '.join(generated_words)
+# Sample text data
+text = """
+The quick brown fox jumps over the lazy dog. The fox is quick and the dog is lazy. 
+The dog barks loudly at the quick brown fox. The lazy dog lies down and falls asleep.
+"""
+
+# Preprocess the text
+words = preprocess_text(text)
+
+# Build the Markov chain model with order 1 (unigram model)
+markov_chain = build_markov_chain(words, order=1)
+
+# Generate text using the Markov chain model
+generated_text = generate_text(markov_chain, length=50, seed=42)
+
+print("Generated Text:")
+print(generated_text)
